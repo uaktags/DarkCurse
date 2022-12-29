@@ -196,7 +196,8 @@ class UserModel {
       )
       .reduce((acc, gold) => acc + gold, 0);
 
-    const fortificationGoldPerTurn = Fortifications[this.fortLevel].goldPerTurn;
+    const fortificationGoldPerTurn =
+      Fortifications[this.fortLevel - 1].goldPerTurn;
     return workerGoldPerTurn + fortificationGoldPerTurn;
   }
 
