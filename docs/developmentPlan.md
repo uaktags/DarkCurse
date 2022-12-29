@@ -34,6 +34,11 @@ with solo play.
   - [X] The number of used attack turns has an impact of the gained XP and Gold.
   - [X] Players can only attack within a relative range of levels.
   - [ ] Players can inflict damage on targetted Player's Fortification by having a great enough offense advantage.
-  - [ ] Players can "Spy" on other players using attack turns and Spy units
-  - [ ] Intel gathered from Spying gets logged into a Spy List
+  - [ ] Players can "Spy" on other players using attack turns and Spy units.
+  - [ ] Intel gathered from Spying gets logged into a Spy List.
   - [X] Players can defend against spies by enlisting "Sentry" units.
+- [ ] Messaging
+  - [X] Players can send messages to other players by clicking option in player's profile.
+  - [X] Players can receive messages from other players.
+  - [ ] Players can reply to a received message.
+  - [X] Players can see the messages they've received in their Inbox
