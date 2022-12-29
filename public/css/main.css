@@ -181,6 +181,9 @@ h2{
     background-image: linear-gradient(360deg, orange, darkorange);
     font-weight: bold;
 }
+.mainArea {
+  padding-bottom: 10px
+}
 
 .EasyMDEContainer {
   background-color: #2d3748 !important;
