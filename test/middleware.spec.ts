@@ -17,8 +17,9 @@ describe('Middleware', () => {
 
       await middleware.authenticate(mockRequest, mockResponse, mockNext);
 
-      expect(mockRequest.logger.debug)
-        .toHaveBeenCalledWith('Request does not contain a JWT');
+      expect(mockRequest.logger.debug).toHaveBeenCalledWith(
+        'Request does not contain a JWT'
+      );
     });
     it('should decode a valid token and skips if it cannot fetch the session', async () => {
       const mockRequest = {
@@ -29,10 +30,10 @@ describe('Middleware', () => {
         },
         daoFactory: {},
         config: {
-          jwtSecret: 'TOKENSECRET'
+          jwtSecret: 'TOKENSECRET',
         },
         cookies: {
-          DCT: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImVlZDliMWVjLWUzYzMtNGVlZi1hMzIwLTUxOThjNzZiYjFiZSIsImlhdCI6MTYzNzY3OTA1N30.fB8Axb-t35mTKe-MK6Fwv1WrSjbMbIEJPDsTICbWCVI'
+          DCT: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImVlZDliMWVjLWUzYzMtNGVlZi1hMzIwLTUxOThjNzZiYjFiZSIsImlhdCI6MTYzNzY3OTA1N30.fB8Axb-t35mTKe-MK6Fwv1WrSjbMbIEJPDsTICbWCVI',
         },
         logger: {
           debug: jest.fn(),
@@ -46,7 +47,9 @@ describe('Middleware', () => {
       expect(mockRequest.logger.debug).toHaveBeenCalledWith(
         'Request contains a valid JWT with sessionId: eed9b1ec-e3c3-4eef-a320-5198c76bb1be'
       );
-      expect(mockRequest.modelFactory.userSession.fetchByExternalId).toHaveBeenCalledWith(
+      expect(
+        mockRequest.modelFactory.userSession.fetchByExternalId
+      ).toHaveBeenCalledWith(
         mockRequest.modelFactory,
         mockRequest.daoFactory,
         mockRequest.logger,
@@ -55,7 +58,7 @@ describe('Middleware', () => {
       expect(mockRequest.logger.debug).toHaveBeenCalledWith(
         'No valid session found for JWT',
         {
-          sessionId: 'eed9b1ec-e3c3-4eef-a320-5198c76bb1be'
+          sessionId: 'eed9b1ec-e3c3-4eef-a320-5198c76bb1be',
         }
       );
     });
@@ -71,10 +74,10 @@ describe('Middleware', () => {
         },
         daoFactory: {},
         config: {
-          jwtSecret: 'TOKENSECRET'
+          jwtSecret: 'TOKENSECRET',
         },
         cookies: {
-          DCT: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImVlZDliMWVjLWUzYzMtNGVlZi1hMzIwLTUxOThjNzZiYjFiZSIsImlhdCI6MTYzNzY3OTA1N30.fB8Axb-t35mTKe-MK6Fwv1WrSjbMbIEJPDsTICbWCVI'
+          DCT: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImVlZDliMWVjLWUzYzMtNGVlZi1hMzIwLTUxOThjNzZiYjFiZSIsImlhdCI6MTYzNzY3OTA1N30.fB8Axb-t35mTKe-MK6Fwv1WrSjbMbIEJPDsTICbWCVI',
         },
         logger: {
           debug: jest.fn(),
@@ -89,11 +92,11 @@ describe('Middleware', () => {
       expect(mockRequest.logger.debug).toHaveBeenCalledWith(
         'Request contains a valid JWT with sessionId: eed9b1ec-e3c3-4eef-a320-5198c76bb1be'
       );
-      
+
       expect(mockRequest.logger.error).toHaveBeenCalledWith(
         'Unable to fetch client for session',
         {
-          sessionId: 'eed9b1ec-e3c3-4eef-a320-5198c76bb1be'
+          sessionId: 'eed9b1ec-e3c3-4eef-a320-5198c76bb1be',
         }
       );
     });
@@ -110,16 +113,17 @@ describe('Middleware', () => {
         },
         daoFactory: {},
         config: {
-          jwtSecret: 'TOKENSECRET'
+          jwtSecret: 'TOKENSECRET',
         },
         cookies: {
-          DCT: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImVlZDliMWVjLWUzYzMtNGVlZi1hMzIwLTUxOThjNzZiYjFiZSIsImlhdCI6MTYzNzY3OTA1N30.fB8Axb-t35mTKe-MK6Fwv1WrSjbMbIEJPDsTICbWCVI'
+          DCT: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImVlZDliMWVjLWUzYzMtNGVlZi1hMzIwLTUxOThjNzZiYjFiZSIsImlhdCI6MTYzNzY3OTA1N30.fB8Axb-t35mTKe-MK6Fwv1WrSjbMbIEJPDsTICbWCVI',
         },
         logger: {
           debug: jest.fn(),
+          error: jest.fn(),
         } as unknown as pino.Logger,
       } as unknown as Request;
-      const mockResponse = {} as Response;
+      const mockResponse = { clearCookie: jest.fn() } as unknown as Response;
       const mockNext = jest.fn();
 
       await middleware.authenticate(mockRequest, mockResponse, mockNext);
@@ -129,12 +133,12 @@ describe('Middleware', () => {
       expect(mockRequest.logger.debug).toHaveBeenCalledWith(
         'Request contains a valid JWT with sessionId: eed9b1ec-e3c3-4eef-a320-5198c76bb1be'
       );
-      
+
       expect(mockRequest.logger.debug).toHaveBeenCalledWith(
         'Found client for session',
         {
           sessionId: 'eed9b1ec-e3c3-4eef-a320-5198c76bb1be',
-          userId: '111'
+          userId: '111',
         }
       );
 
@@ -143,10 +147,10 @@ describe('Middleware', () => {
     it('should catch errors thrown by JWT decode and clear the offending cookie', async () => {
       const mockRequest = {
         config: {
-          jwtSecret: 'TOKENSECRET'
+          jwtSecret: 'TOKENSECRET',
         },
         cookies: {
-          DCT: 'THIS_IS_A_COOKIE'
+          DCT: 'THIS_IS_A_COOKIE',
         },
         logger: {
           error: jest.fn(),
@@ -161,10 +165,12 @@ describe('Middleware', () => {
 
       expect(mockResponse.clearCookie).toHaveBeenCalledWith('DCT');
 
-      expect(mockRequest.logger.error)
-        .toHaveBeenCalledWith('Request JWT invalid', {
-          error: "jwt malformed"
-        });
+      expect(mockRequest.logger.error).toHaveBeenCalledWith(
+        'Request JWT invalid',
+        {
+          error: 'jwt malformed',
+        }
+      );
     });
   });
 });

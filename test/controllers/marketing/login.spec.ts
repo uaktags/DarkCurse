@@ -8,7 +8,7 @@ describe('Controller: Auth', () => {
       const mockRequest = {
         body: {
           password: 'password',
-        }
+        },
       } as Request;
       const mockResponse = {
         render: jest.fn().mockReturnThis(),
@@ -16,18 +16,17 @@ describe('Controller: Auth', () => {
 
       await LoginController.loginAction(mockRequest, mockResponse);
 
-      expect(mockResponse.render)
-        .toHaveBeenCalledWith('page/marketing/login', {
-          layout: 'marketing',
-          pageTitle: 'Login',
-          errorMessage: 'Email and password are mandatory'
-        });
+      expect(mockResponse.render).toHaveBeenCalledWith('page/marketing/login', {
+        layout: 'marketing',
+        pageTitle: 'Login',
+        errorMessage: 'Email and password are mandatory',
+      });
     });
     test('it validates the password param', async () => {
       const mockRequest = {
         body: {
           email: 'email',
-        }
+        },
       } as Request;
       const mockResponse = {
         render: jest.fn().mockReturnThis(),
@@ -35,24 +34,23 @@ describe('Controller: Auth', () => {
 
       await LoginController.loginAction(mockRequest, mockResponse);
 
-      expect(mockResponse.render)
-        .toHaveBeenCalledWith('page/marketing/login', {
-          layout: 'marketing',
-          pageTitle: 'Login',
-          errorMessage: 'Email and password are mandatory'
-        });
+      expect(mockResponse.render).toHaveBeenCalledWith('page/marketing/login', {
+        layout: 'marketing',
+        pageTitle: 'Login',
+        errorMessage: 'Email and password are mandatory',
+      });
     });
     test('returns an error if the email is not recognised', async () => {
       const mockRequest = {
         modelFactory: {
           user: {
             fetchByEmail: jest.fn().mockReturnValue(null),
-          }
+          },
         },
         body: {
           email: 'email',
-          password: 'password'
-        }
+          password: 'password',
+        },
       } as unknown as Request;
       const mockResponse = {
         render: jest.fn().mockReturnThis(),
@@ -60,12 +58,11 @@ describe('Controller: Auth', () => {
 
       await LoginController.loginAction(mockRequest, mockResponse);
 
-      expect(mockResponse.render)
-        .toHaveBeenCalledWith('page/marketing/login', {
-          layout: 'marketing',
-          pageTitle: 'Login',
-          errorMessage: 'Email or password not recognised'
-        });
+      expect(mockResponse.render).toHaveBeenCalledWith('page/marketing/login', {
+        layout: 'marketing',
+        pageTitle: 'Login',
+        errorMessage: 'Email or password not recognized',
+      });
     });
     test('returns an error if the password is incorrect', async () => {
       const mockUserModel = {
@@ -75,12 +72,12 @@ describe('Controller: Auth', () => {
         modelFactory: {
           user: {
             fetchByEmail: jest.fn().mockReturnValue(mockUserModel),
-          }
+          },
         },
         body: {
           email: 'email',
-          password: 'password'
-        }
+          password: 'password',
+        },
       } as unknown as Request;
       const mockResponse = {
         render: jest.fn().mockReturnThis(),
@@ -88,12 +85,11 @@ describe('Controller: Auth', () => {
 
       await LoginController.loginAction(mockRequest, mockResponse);
 
-      expect(mockResponse.render)
-        .toHaveBeenCalledWith('page/marketing/login', {
-          layout: 'marketing',
-          pageTitle: 'Login',
-          errorMessage: 'Email or password not recognised'
-        });
+      expect(mockResponse.render).toHaveBeenCalledWith('page/marketing/login', {
+        layout: 'marketing',
+        pageTitle: 'Login',
+        errorMessage: 'Email or password not recognised',
+      });
     });
   });
 });

@@ -12,6 +12,7 @@ describe('Controller: Bank', () => {
           goldInBank: 2000,
           maximumBankDeposits: 1,
           fetchAvailableBankDeposits: jest.fn().mockResolvedValue(1),
+          formatUsersStats: jest.fn().mockReturnValue(''),
         },
       } as unknown as Request;
       const mockRes = {
@@ -26,10 +27,11 @@ describe('Controller: Bank', () => {
         layout: 'main',
         pageTitle: 'Bank',
         sidebarData: mockReq.sidebarData,
-
+        menu_category: 'structures',
+        menu_link: 'bank',
         gold: '1,000',
         goldInBank: '2,000',
-
+        userDataFiltered: '',
         alert: null,
 
         deposits: {
@@ -54,7 +56,9 @@ describe('Controller: Bank', () => {
           },
         },
         sidebarData: {},
-        user: {},
+        user: {
+          formatUsersStats: jest.fn().mockReturnValue(''),
+        },
       } as unknown as Request;
       const mockRes = {
         render: jest.fn().mockReturnThis(),
@@ -67,8 +71,10 @@ describe('Controller: Bank', () => {
       expect(mockRes.render).toHaveBeenCalledWith('page/main/bank/history', {
         layout: 'main',
         pageTitle: 'Bank',
+        menu_category: 'structures',
+        menu_link: 'bank',
         sidebarData: mockReq.sidebarData,
-
+        userDataFiltered: '',
         history: [],
       });
     });

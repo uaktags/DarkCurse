@@ -1,14 +1,15 @@
 import { Request, Response } from 'express';
 import controller from '../../../src/controllers/main/training';
 import UserModel from '../../../src/models/user';
+import { PlayerUnit } from '../../../types/typings';
 
 describe('Controller: Training', () => {
   describe('trainUnitsAction', () => {
     test('it ignores units that are not available', async () => {
       const mockRequest = {
         body: {
-          'WORKER_1': '100',
-          'WORKER_2': '1',
+          WORKER_1: '100',
+          WORKER_2: '1',
         },
         logger: {
           debug: jest.fn().mockReturnThis(),
@@ -18,22 +19,22 @@ describe('Controller: Training', () => {
           citizens: 0,
           availableUnitTypes: [
             { name: 'Worker', type: 'WORKER', level: 1, bonus: 65, cost: 2000 },
-          ]
-        } as UserModel
+          ],
+        } as UserModel,
       } as unknown as Request;
-      const mockResponse = {} as Response;
+      const mockResponse = { json: jest.fn() } as unknown as Response;
 
       await controller.trainUnitsAction(mockRequest, mockResponse);
 
       expect(mockRequest.logger.debug).toHaveBeenCalledWith(
         'Units to be trained',
-        [{level: 1, quantity: 100, cost: 2000, type: 'WORKER'}]
+        [{ level: 1, quantity: 100, cost: 2000, type: 'WORKER' }]
       );
     });
     it('validates that the requested number of units does not exceed available citizens', async () => {
       const mockRequest = {
         body: {
-          'WORKER_1': '100',
+          WORKER_1: '100',
         },
         logger: {
           debug: jest.fn().mockReturnThis(),
@@ -42,21 +43,21 @@ describe('Controller: Training', () => {
           citizens: 50,
           availableUnitTypes: [
             { name: 'Worker', type: 'WORKER', level: 1, bonus: 65, cost: 2000 },
-          ]
-        } as UserModel
+          ],
+        } as UserModel,
       } as unknown as Request;
-      const mockResponse = {} as Response;
+      const mockResponse = { json: jest.fn() } as unknown as Response;
 
       await controller.trainUnitsAction(mockRequest, mockResponse);
 
       expect(mockRequest.logger.debug).toHaveBeenCalledWith(
-        'Not enough citizens to train requested units',
+        'Not enough citizens to train requested units'
       );
     });
     it('validates that the cost of requested number of units does not exceed available gold', async () => {
       const mockRequest = {
         body: {
-          'WORKER_1': '100',
+          WORKER_1: '100',
         },
         logger: {
           debug: jest.fn().mockReturnThis(),
@@ -66,21 +67,21 @@ describe('Controller: Training', () => {
           gold: 50,
           availableUnitTypes: [
             { name: 'Worker', type: 'WORKER', level: 1, bonus: 65, cost: 2000 },
-          ]
-        } as UserModel
+          ],
+        } as UserModel,
       } as unknown as Request;
-      const mockResponse = {} as Response;
+      const mockResponse = { json: jest.fn() } as unknown as Response;
 
       await controller.trainUnitsAction(mockRequest, mockResponse);
 
       expect(mockRequest.logger.debug).toHaveBeenCalledWith(
-        'Not enough gold to train requested units',
+        'Not enough gold to train requested units'
       );
     });
     it('Subtracts gold and trains units for a sucessful request', async () => {
       const mockRequest = {
         body: {
-          'WORKER_1': '2',
+          WORKER_1: '2',
         },
         logger: {
           debug: jest.fn().mockReturnThis(),
@@ -93,10 +94,15 @@ describe('Controller: Training', () => {
           ],
           subtractGold: jest.fn().mockReturnThis(),
           trainNewUnits: jest.fn().mockReturnThis(),
-        } as unknown as UserModel
+          units: [
+            { type: 'CITIZEN', level: 1, quantity: 1 },
+            { type: 'WORKER', level: 1, quantity: 1 },
+          ],
+        } as unknown as UserModel,
       } as unknown as Request;
       const mockResponse = {
         redirect: jest.fn().mockReturnThis(),
+        json: jest.fn().mockReturnThis(),
       } as unknown as Response;
 
       await controller.trainUnitsAction(mockRequest, mockResponse);
@@ -113,10 +119,8 @@ describe('Controller: Training', () => {
           level: 1,
           quantity: 2,
           type: 'WORKER',
-        }
+        },
       ]);
-
-      expect(mockResponse.redirect).toHaveBeenCalledWith('/training');
     });
   });
 });

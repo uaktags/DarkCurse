@@ -93,6 +93,7 @@ describe('Model: User', () => {
         const mockData = {
           units: [{ type: 'WORKER', level: 1, quantity: 2 }],
           fortLevel: 1,
+          race: 'HUMAN',
         } as UserData;
 
         const user = new UserModel(
@@ -146,7 +147,7 @@ describe('Model: User', () => {
         const mockDaoFactory = {} as DaoFactory;
         const mockLogger = {} as pino.Logger;
         const mockData = {
-          experience: 201,
+          experience: 9001,
         } as UserData;
 
         const user = new UserModel(
@@ -192,7 +193,7 @@ describe('Model: User', () => {
           mockData
         );
 
-        expect(user.xpToNextLevel).toBe(50);
+        expect(user.xpToNextLevel).toBe(5850);
       });
     });
     describe('get fortHealth', () => {
@@ -214,8 +215,8 @@ describe('Model: User', () => {
 
         expect(user.fortHealth).toMatchObject({
           current: 50,
-          max: 50,
-          percentage: 100,
+          max: 100,
+          percentage: 50,
         });
       });
     });
@@ -224,7 +225,9 @@ describe('Model: User', () => {
         const mockModelFactory = {} as ModelFactory;
         const mockDaoFactory = {} as DaoFactory;
         const mockLogger = {} as pino.Logger;
-        const mockData = {} as UserData;
+        const mockData = {
+          fortLevel: 1,
+        } as UserData;
 
         const user = new UserModel(
           mockModelFactory,
@@ -236,9 +239,25 @@ describe('Model: User', () => {
         expect(user.availableUnitTypes).toMatchObject([
           { name: 'Worker', type: 'WORKER', level: 1, bonus: 65, cost: 2000 },
           { name: 'Soldier', type: 'OFFENSE', level: 1, bonus: 3, cost: 1500 },
+          { name: 'Knight', type: 'OFFENSE', level: 2, bonus: 20, cost: 10000 },
           { name: 'Guard', type: 'DEFENSE', level: 1, bonus: 3, cost: 1500 },
+          { name: 'Archer', type: 'DEFENSE', level: 2, bonus: 20, cost: 10000 },
           { name: 'Spy', type: 'SPY', level: 1, bonus: 3, cost: 1500 },
+          {
+            name: 'Infiltrator',
+            type: 'SPY',
+            level: 2,
+            bonus: 20,
+            cost: 10000,
+          },
           { name: 'Sentry', type: 'SENTRY', level: 1, bonus: 3, cost: 1500 },
+          {
+            name: 'Sentinel',
+            type: 'SENTRY',
+            level: 2,
+            bonus: 20,
+            cost: 10000,
+          },
         ]);
       });
     });

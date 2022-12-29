@@ -6,7 +6,7 @@ export default {
       req.modelFactory,
       req.daoFactory,
       req.logger,
-      req.user.id
+      req.user?.id
     );
 
     if (!user) {
@@ -16,7 +16,7 @@ export default {
 
     const link = await user.userRecruitingLink();
 
-    res.render('page/main/overview', {
+    return res.render('page/main/overview', {
       layout: 'main',
       pageTitle: 'Overview',
       menu_category: 'home',
@@ -39,6 +39,5 @@ export default {
       sentryVictories: 0,
       recruitmentLink: link,
     });
-    return;
   },
 };
