@@ -27,6 +27,11 @@ export interface PageAlert {
   message: string;
 }
 
+export type CasualtiesResult = {
+  attackerCasualties: AttackPlayerUnit[];
+  defenderCasualties: AttackPlayerUnit[];
+};
+
 export type SidebarData = {
   gold: string;
   citizens: string;
@@ -42,6 +47,13 @@ export type PlayerUnit = {
   type: UnitType;
   quantity: number;
 };
+
+export type AttackPlayerUnit = {
+  level: number;
+  type: UnitType;
+  quantity: number;
+  casualties: number;
+}
 export type PlayerItem = {
   level: number;
   type: ItemType;
@@ -114,6 +126,14 @@ export type PlayerBonus = {
   bonusAmount: number;
 };
 export type BankAccountType = 'HAND' | 'BANK';
+export type UnitTotalsType = {
+  citizens: number;
+  workers: number,
+  offense: number,
+  defense: number,
+  spies: number,
+  sentries: number,
+}
 /**
  * ECONOMY - Gold Per Turn added to the players account.
  * PLAYER_TRANSFER - Funds manually transferred by the player.
