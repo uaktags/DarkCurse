@@ -3,139 +3,101 @@ import { marked } from 'marked';
 import { PageAlert } from '../../../types/typings';
 import { MessageData } from '../../daos/user';
 
-async function inboxPage(req: Request, res: Response, alert?: PageAlert) {
+async function renderPage(
+  req: Request,
+  res: Response,
+  page: string,
+  pageTitle: string,
+  menu_link: string,
+  messageData: MessageData,
+  alert?: PageAlert
+) {
   const messagesDb = await req.daoFactory?.user.fetchMessages(req.user.id);
-  return res.render('page/main/inbox/inbox', {
+  const message = messageData
+    ? {
+        ...messageData,
+        body: marked.parse(messageData.body),
+      }
+    : null;
+
+  return res.render(`page/main/inbox/${page}`, {
     layout: 'main',
-    pageTitle: 'Inbox',
+    pageTitle,
     sidebarData: req.sidebarData,
     menu_category: 'home',
-    menu_link: 'inbox',
+    menu_link,
     userDataFiltered: await req.user.formatUsersStats(req.user),
-
     messages: messagesDb,
+    message,
+    action: messageData ? 'reply' : 'compose',
+    ActionMessage: messageData ? 'Reply' : 'Compose New',
   });
+}
+
+async function inboxPage(req: Request, res: Response, alert?: PageAlert) {
+  return renderPage(req, res, 'inbox', 'Inbox', 'inbox', null);
 }
 
 async function composePage(req: Request, res: Response, alert?: PageAlert) {
-  let msgId = 0;
-  if (req.params.msgId) {
-    msgId = parseInt(req.params.msgId);
-  }
-  let oldMsg = null;
-  /*if(msgId > 0){
+  const recipientId = parseInt(req.params.recipientId ?? '0');
+  const recipient =
+    recipientId > 0 ? await req.daoFactory?.user.fetchById(recipientId) : null;
 
-  }*/
-
-  return res.render('page/main/inbox/compose', {
-    layout: 'main',
-    pageTitle: 'Compose',
-    sidebarData: req.sidebarData,
-    menu_category: 'home',
-    menu_link: 'inbox',
-    userDataFiltered: await req.user.formatUsersStats(req.user),
-
-    ActionMessage: 'Compose New',
-  });
+  return renderPage(
+    req,
+    res,
+    'compose',
+    'Compose',
+    'inbox',
+    recipient
+      ? {
+          id: 0,
+          subject: '',
+          body: '',
+          from_user: await req.daoFactory?.user.fetchById(req.user.id),
+          to_user: recipient,
+          date_time: new Date().toString(),
+        }
+      : null
+  );
 }
 
 async function readPage(req: Request, res: Response, alert?: PageAlert) {
-  const message = await req.daoFactory?.user.fetchMessageById(
-    parseInt(req.params.msgId)
-  );
-  marked.setOptions({
-    renderer: new marked.Renderer(),
-    pedantic: false,
-    gfm: true,
-    breaks: false,
-    sanitize: false,
-    smartypants: false,
-    xhtml: false,
-  });
-  const renderer = {
-    table(header: string, body: string) {
-      return `
-        <table class="table table-striped table-dark">
-        ${body}
-        </table>      
-      `;
-    },
-  };
-  marked.use({ renderer });
-  const newMessage: MessageData = {
-    id: message.id,
-    subject: message.subject,
-    body: marked.parse(message.body),
-    from_user: message.from_user,
-    to_user: message.to_user,
-    date_time: message.date_time,
-  };
-  return res.render('page/main/inbox/readmessage', {
-    layout: 'main',
-    pageTitle: 'Compose',
-    sidebarData: req.sidebarData,
-    menu_category: 'home',
-    menu_link: 'inbox',
-    userDataFiltered: await req.user.formatUsersStats(req.user),
+  const messageId = parseInt(req.params.msgId ?? '0');
+  const message = messageId
+    ? await req.daoFactory?.user.fetchMessageById(messageId)
+    : null;
 
-    message: newMessage,
-    ActionMessage: 'Compose New',
-  });
+  return renderPage(req, res, 'readmessage', 'Read Message', 'inbox', message);
 }
+
 async function replyPage(req: Request, res: Response, alert?: PageAlert) {
-  const message = await req.daoFactory?.user.fetchMessageById(
-    parseInt(req.params.msgId)
-  );
-  marked.setOptions({
-    renderer: new marked.Renderer(),
-    pedantic: false,
-    gfm: true,
-    breaks: false,
-    sanitize: false,
-    smartypants: false,
-    xhtml: false,
-  });
-  const renderer = {
-    table(header: string, body: string) {
-      return `
-        <table class="table table-striped table-dark">
-        ${body}
-        </table>      
-      `;
-    },
-  };
-  marked.use({ renderer });
-  const reply: MessageData = {
-    id: message.id,
-    subject: message.subject,
-    body:
-      'Type your response here\n\n\n\n-----\n' +
-      '-----\n' +
-      '\nFrom: ' +
-      message.from_user.displayName +
-      '\nTo: ' +
-      message.to_user.displayName +
-      '\nSubject: ' +
-      message.subject +
-      '\nDate: ' +
-      message.date_time.toString() +
-      '\n\n-----\n' +
-      message.body,
-    from_user: message.from_user,
-    to_user: message.to_user,
-    date_time: message.date_time,
-  };
-  return res.render('page/main/inbox/compose', {
-    layout: 'main',
-    pageTitle: 'Compose',
-    sidebarData: req.sidebarData,
-    menu_category: 'home',
-    menu_link: 'inbox',
-    userDataFiltered: await req.user.formatUsersStats(req.user),
+  const messageId = parseInt(req.params.msgId ?? '0');
+  const message = messageId
+    ? await req.daoFactory?.user.fetchMessageById(messageId)
+    : null;
 
-    message: reply,
-    action: 'reply',
-    ActionMessage: 'Reply',
-  });
+  return renderPage(
+    req,
+    res,
+    'compose',
+    'Reply',
+    'inbox',
+    message
+      ? {
+          id: 0,
+          subject: `Re: ${message.subject}`,
+          body: '',
+          from_user: await req.daoFactory?.user.fetchById(req.user.id),
+          to_user: message.from_user,
+          date_time: new Date().toString(),
+        }
+      : null
+  );
 }
+
+async function handleDelivery(req: Request, res: Response) {
+  const { message_id } = req.params;
+}
+
 export default { inboxPage, composePage, readPage, replyPage };
