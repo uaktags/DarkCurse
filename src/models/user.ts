@@ -5,10 +5,12 @@ import DaoFactory from '../daoFactory';
 import { UserData } from '../daos/user';
 import ModelFactory from '../modelFactory';
 import {
+  AttackPlayerUnit,
   OffensiveUpgradeType,
   SentryUpgradeType,
   SidebarData,
   SpyUpgradeType,
+  UnitTotalsType,
   UnitType,
 } from '../../types/typings';
 
@@ -35,7 +37,7 @@ import {
   SpyUpgrades,
   SentryUpgrades,
 } from '../constants';
-import { off } from 'process';
+import { getMaxListeners, off } from 'process';
 import WarHistoryModel from './warHistory';
 
 class UserModel {
@@ -246,7 +248,14 @@ class UserModel {
     return this.getArmyStat('SPY');
   }
 
-  get unitTotals(): unknown {
+  canAttack(level: number): boolean {
+    return (
+      this.getLevelFromXP(this.experience) >= level - 5 &&
+      this.getLevelFromXP(this.experience) <= level + 5 &&
+      this.offense != 0
+    );
+  }
+  get unitTotals(): UnitTotalsType {
     const units = this.units;
     const untrained = this.citizens;
     const workers = units
@@ -269,28 +278,26 @@ class UserModel {
       .filter((units) => units.type === 'SENTRY')
       .map((unit) => unit.quantity)
       .reduce((acc, quant) => acc + quant, 0);
-    return [
-      {
-        citizens: untrained,
-        workers: workers,
-        offense: offense,
-        defense: defense,
-        spies: spies,
-        sentries: sentries,
-      },
-    ];
+    return {
+      citizens: untrained,
+      workers: workers,
+      offense: offense,
+      defense: defense,
+      spies: spies,
+      sentries: sentries,
+    };
+  }
+
+  getLevelFromXP(xp: number): number {
+    const level = Math.floor(-2.5 + Math.sqrt(4.25 + 0.002 * xp));
+    if (level < 1) return 1;
+    else return level;
   }
 
   get level(): number {
     if (this.experience === 0) return 1;
 
-    const possibleLevels = Object.values(Levels)
-      .filter((levelXp) => this.experience > levelXp)
-      .sort((a, b) => b - a);
-    const xpOfCurrentLevel = possibleLevels[0];
-    return Number(
-      Object.entries(Levels).find(([, xp]) => xp === xpOfCurrentLevel)[0]
-    );
+    return this.getLevelFromXP(this.experience);
   }
 
   get xpToNextLevel(): number {
@@ -497,6 +504,16 @@ class UserModel {
     return user;
   }
 
+  async calculateRank(): Promise<number> {
+    const O = this.offense * 0.1;
+    const D = this.defense * 0.1;
+    const SO = this.spy * 0.1;
+    const SD = this.sentry * 0.1;
+    const XP = this.experience * 0.0001;
+
+    return O + D + SO + SD + XP;
+  }
+
   //TODO: I'm not happy with this idea, feels like a good way to overwhelm the db
   async updateLastActive(): Promise<void> {
     await this.daoFactory.user.setLastActive(this.id);
@@ -560,46 +577,53 @@ class UserModel {
     return await this.daoFactory.user.getSalt(this.id);
   }
 
-  /**
-   * Takes in an object containing the details of the desired units. It then
-   * merges the objects, if a unit already exists, it will add the quantity
-   * if it's a new unit. It'll be added directly.
-   *
-   * TODO: This is a rather in-elegant approach. Make it better.
-   */
   async untrainNewUnits(newUnits: PlayerUnit[]): Promise<void> {
-    // Add New Citizens
+    // Update existing units and add new citizens
     const totalNewUnits = newUnits.reduce(
       (acc, unit) => acc + unit.quantity,
       0
     );
-    const citizenUnits = this.units.find((unit) => unit.type === 'CITIZEN');
-    citizenUnits.quantity += totalNewUnits;
-
-    // Update existing units
-    const unitsToUpdate = this.units.filter((unit) =>
-      newUnits.find(
-        (newUnit) => newUnit.type === unit.type && newUnit.level === unit.level
-      )
-    );
-    unitsToUpdate.forEach((unit) => {
+    this.units = this.units.map((unit) => {
       const newUnit = newUnits.find(
         (newUnit) => newUnit.type === unit.type && newUnit.level === unit.level
       );
-      unit.quantity -= newUnit.quantity;
+      if (newUnit) {
+        unit.quantity -= newUnit.quantity;
+      }
+      if (unit.type === 'CITIZEN') {
+        unit.quantity += totalNewUnits;
+      }
+      return unit;
     });
 
-    this.units = Object.assign(unitsToUpdate, this.units);
-
-    // Subtract old units
-    const newUnitsToAdd = newUnits.filter(
-      (newUnit) =>
+    // Add new units that don't already exist
+    newUnits.forEach((newUnit) => {
+      if (
         !this.units.find(
           (unit) => unit.type === newUnit.type && unit.level === newUnit.level
         )
-    );
-    this.units = this.units.concat(newUnitsToAdd);
+      ) {
+        this.units.push(newUnit);
+      }
+    });
 
+    await this.daoFactory.user.setUnits(this.id, this.units);
+  }
+
+  async killUnits(unitsToKill: AttackPlayerUnit[]): Promise<void> {
+    this.units = this.units.map((unit) => {
+      const unitToKill = unitsToKill.find(
+        (kill) => kill.type === unit.type && kill.level === unit.level
+      );
+      if (unitToKill) {
+        console.log('qty: ', unit.quantity);
+        console.log('cas: ', unitToKill.quantity)
+        unit.quantity = Math.max(unit.quantity - unitToKill.casualties, 0);
+      }
+      return unit;
+    });
+    console.log(this.units);
+    return
     await this.daoFactory.user.setUnits(this.id, this.units);
   }
 

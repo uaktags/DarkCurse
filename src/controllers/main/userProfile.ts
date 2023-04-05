@@ -15,16 +15,10 @@ export default {
     );
 
     const userProfileRank = await userProfile.fetchRank(userProfile.id);
-    let cantAttack = true;
+    let canAttack = req.user.canAttack(userProfile.level); 
     if (req.user?.id !== undefined) {
       if (userProfileId == req.user?.id) return res.redirect('/overview');
-      if (
-        userProfile.level >= req.user.level - 5 &&
-        userProfile.level <= req.user.level + 5 &&
-        req.user.offense != 0
-      ) {
-        cantAttack = false;
-      }
+      let canAttack = req.user.canAttack(userProfile.level);  
 
       let messages: PageAlert;
       if (req.query.err) {
@@ -99,7 +93,7 @@ export default {
         gold: new Intl.NumberFormat('en-GB').format(userProfile.gold),
         recruitLink: await userProfile.userRecruitingLink(),
         bio: marked.parse(bio),
-        cantAttack: cantAttack,
+        canAttack: canAttack,
         messages: messages,
         isOnline:
           userProfile.last_active < new Date(new Date().getTime() - 300000)
@@ -126,7 +120,7 @@ export default {
         fortification: Fortifications[userProfile.fortLevel].name,
         gold: new Intl.NumberFormat('en-GB').format(userProfile.gold),
         bio: 'THIS IS A BIO',
-        cantAttack: cantAttack,
+        canAttack: canAttack,
         isOnline:
           userProfile.last_active < new Date(new Date().getTime() - 300000)
             ? false
